@@ -1,0 +1,616 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Products - ShopHub{% endblock %}
+
+{% block content %}
+<style>
+    .products-page {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .products-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 0.5rem 0 0 0;
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .filters-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .filters-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .filter-select {
+        padding: 0.6rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: border-color 0.3s;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        position: relative;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+
+    .product-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.1);
+    }
+
+    .product-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 4rem;
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 10;
+    }
+
+    .badge-discount {
+        background: #ff4757;
+        color: white;
+    }
+
+    .badge-new {
+        background: #00b894;
+        color: white;
+    }
+
+    .badge-featured {
+        background: #fdcb6e;
+        color: #2d3436;
+    }
+
+    .product-actions-overlay {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 10;
+    }
+
+    .product-card:hover .product-actions-overlay {
+        opacity: 1;
+    }
+
+    .action-btn {
+        width: 45px;
+        height: 45px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .action-btn:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .product-body {
+        padding: 1.5rem;
+    }
+
+    .product-category {
+        color: #6c757d;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        min-height: 55px;
+        line-height: 1.4;
+    }
+
+    .product-description {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stars {
+        color: #ffc107;
+        font-size: 0.9rem;
+    }
+
+    .rating-count {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 2px solid #f1f3f5;
+    }
+
+    .price-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .product-price {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .original-price {
+        font-size: 0.9rem;
+        color: #adb5bd;
+        text-decoration: line-through;
+    }
+
+    .stock-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 0.3rem;
+    }
+
+    .stock-in {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .stock-low {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .stock-out {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .add-to-cart-btn {
+        padding: 0.8rem 1.5rem;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .add-to-cart-btn:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+    }
+
+    .add-to-cart-btn:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .no-products {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .no-products i {
+        font-size: 5rem;
+        color: #cbd5e0;
+        margin-bottom: 1.5rem;
+    }
+
+    .no-products h2 {
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    .no-products p {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .product-count {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 1200px) {
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .product-image-wrapper {
+            height: 200px;
+        }
+
+        .product-name {
+            font-size: 1rem;
+            min-height: auto;
+        }
+
+        .product-price {
+            font-size: 1.4rem;
+        }
+
+        .add-to-cart-btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .filters-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+
+        .filter-select {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="products-page">
+    <div class="products-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-store"></i> Our Products</h1>
+            <p>Discover amazing products at great prices</p>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <form method="get" action="{% url 'product_list' %}">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="category">Category:</label>
+                        <select name="category" id="category" class="filter-select" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort">Sort By:</label>
+                        <select name="sort" id="sort" class="filter-select" onchange="this.form.submit()">
+                            <option value="">Default</option>
+                            <option value="price_low" {% if request.GET.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if request.GET.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name: A to Z</option>
+                            <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Newest First</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="stock">Availability:</label>
+                        <select name="stock" id="stock" class="filter-select" onchange="this.form.submit()">
+                            <option value="">All Products</option>
+                            <option value="in_stock" {% if request.GET.stock == 'in_stock' %}selected{% endif %}>In Stock</option>
+                            <option value="low_stock" {% if request.GET.stock == 'low_stock' %}selected{% endif %}>Low Stock</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Product Count -->
+        {% if products %}
+        <div class="product-count">
+            <strong>{{ products|length }}</strong> product{{ products|length|pluralize }} found
+        </div>
+        {% endif %}
+
+        <!-- Products Grid -->
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image-wrapper">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    {% else %}
+                        <div class="product-image-placeholder">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    {% endif %}
+
+                    <!-- Product Badge -->
+                    {% if product.discount_percent %}
+                        <span class="product-badge badge-discount">-{{ product.discount_percent }}%</span>
+                    {% elif product.is_new %}
+                        <span class="product-badge badge-new">NEW</span>
+                    {% elif product.is_featured %}
+                        <span class="product-badge badge-featured">FEATURED</span>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="product-actions-overlay">
+                        <button class="action-btn" title="Quick View">
+                            <i class="far fa-eye"></i>
+                        </button>
+                        <button class="action-btn" title="Add to Wishlist">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        <button class="action-btn" title="Compare">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="product-body">
+                    <div class="product-category">{{ product.category.name }}</div>
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-description">{{ product.description|truncatewords:20 }}</p>
+
+                    <!-- Rating -->
+                    <div class="product-rating">
+                        <div class="stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= product.rating|floatformat:0 %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="rating-count">({{ product.review_count }})</span>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="product-footer">
+                        <div class="price-section">
+                            <div class="product-price">${{ product.price }}</div>
+                            {% if product.original_price %}
+                                <div class="original-price">${{ product.original_price }}</div>
+                            {% endif %}
+                            <span class="stock-badge stock-{{ product.stock_status }}">
+                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                {% if product.stock_status == 'in_stock' %}
+                                    In Stock
+                                {% elif product.stock_status == 'low_stock' %}
+                                    Low Stock
+                                {% else %}
+                                    Out of Stock
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <form method="post" action="{% url 'add_to_cart' product.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="add-to-cart-btn" {% if product.stock_status == 'out_stock' %}disabled{% endif %}>
+                                <i class="fas fa-shopping-cart"></i>
+                                Add to Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-products">
+            <i class="fas fa-box-open"></i>
+            <h2>No Products Found</h2>
+            <p>Try adjusting your filters or check back later for new products.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Add to cart with AJAX (optional enhancement)
+    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const form = this.closest('form');
+            const formData = new FormData(form);
+            const originalHTML = this.innerHTML;
+            
+            // Show loading state
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Success state
+                    this.innerHTML = '<i class="fas fa-check"></i> Added!';
+                    this.style.background = '#00b894';
+                    
+                    // Update cart count in navbar if it exists
+                    const cartBadge = document.querySelector('.cart-badge');
+                    if (cartBadge) {
+                        const currentCount = parseInt(cartBadge.textContent) || 0;
+                        cartBadge.textContent = currentCount + 1;
+                        cartBadge.style.display = 'flex';
+                    }
+                    
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        this.innerHTML = originalHTML;
+                        this.style.background = '';
+                        this.disabled = false;
+                    }, 2000);
+                } else {
+                    throw new Error('Failed to add to cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.innerHTML = originalHTML;
+                this.disabled = false;
+                alert('Failed to add to cart. Please try again.');
+            });
+        });
+    });
+
+    // Smooth scroll to top button (optional)
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            // Show scroll to top button
+        }
+    });
+</script>
+
+{% endblock %}

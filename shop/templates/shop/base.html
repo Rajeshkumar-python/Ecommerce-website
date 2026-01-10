@@ -1,0 +1,73 @@
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: #0d6efd;">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}" style="color: #ffc107; font-size: 1.5rem;">
+            ShopHub
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav align-items-center">
+
+                <!-- Home -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                       href="{% url 'home' %}">
+                        Home
+                    </a>
+                </li>
+
+                <!-- Products -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}"
+                       href="{% url 'product_list' %}">
+                        Products
+                    </a>
+                </li>
+
+                <!-- Cart -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'cart_view' %}active{% endif %}"
+                       href="{% url 'cart_view' %}">
+                        <i class="fas fa-shopping-cart me-1"></i> Cart
+                    </a>
+                </li>
+
+                <!-- My Orders -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'my_orders' %}active{% endif %}"
+                       href="{% url 'my_orders' %}">
+                        My Orders
+                    </a>
+                </li>
+
+                <!-- Logout -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">
+                        Logout
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .nav-link {
+        font-weight: 500;
+        font-size: 1rem;
+        color: #f8f9fa !important;
+        transition: 0.3s ease;
+    }
+    .nav-link:hover {
+        color: #ffc107 !important;
+        transform: translateY(-2px);
+    }
+    .nav-link.active {
+        color: #ffc107 !important;
+        font-weight: 600;
+    }
+</style>
